@@ -133,7 +133,7 @@ If the user says **"当前任务简单做"** or similar in a specific session, y
 
 ## Adaptation for Product Requirements Analysis (需求分析)
 
-The cross-check pipeline adapts naturally to **product requirements analysis**, where the goal is to evaluate a feature request or product decision from multiple independent perspectives before committing to a direction. This adaptation is used by Steven (MayGrove/Sino-Well Product Director) as his core requirements analysis framework.
+The cross-check pipeline adapts naturally to **product requirements analysis**, where the goal is to evaluate a feature request or product decision from multiple independent perspectives before committing to a direction.
 
 **Domain-specific agents** (instead of research sub-modules):
 
@@ -154,8 +154,6 @@ The cross-check pipeline adapts naturally to **product requirements analysis**, 
 - **Phase 5 (Final Delivery)**: A one-page decision summary with: what we know, what we don't know, the key contradiction, and the recommended decision path.
 
 **Key difference from research**: The output is a **decision recommendation**, not a research report. The entire pipeline exists to surface the contradictions that the human PM needs to resolve.
-
-**案例 (real usage)**: MayGrove ambient light requirements analysis (2026-07) — 4 agents + cross-review concluded that independent RGB mood lighting was a pseudo-need, while the real opportunity was dimmable/bedtime-mode grow lights. The decision went directly into product roadmap.
 
 ## Adaptation for Design System / Competitive Analysis Research
 
