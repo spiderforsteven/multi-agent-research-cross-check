@@ -11,6 +11,40 @@ tags: [research, multi-agent, cross-check, quality-assurance, critique]
 
 # Multi-Agent Research with Cross-Check (互查辩论)
 
+## Runtime Adaptation
+
+The pipeline below is runtime-agnostic. Only the **tool names** are Hermes-specific — the README already advertises Hermes / Claude Code / Codex / Cursor compatibility, and this section is what makes that claim true.
+
+Translate the names on the fly; the *capabilities* are what matter:
+
+| Capability | Hermes | WorkBuddy | Claude Code / generic |
+|---|---|---|---|
+| Dispatch a subagent | `delegate_task` | `Agent` tool | `Task` tool / spawn subagent |
+| Search file contents | `search_files` | `Grep` | `Grep`, `rg`, `grep` |
+| Apply a surgical edit | `patch` | `Edit` | `Edit` / str-replace |
+| Navigate a browser | `browser_navigate` | `agent-browser open` | Playwright MCP / Chrome DevTools MCP |
+| Execute JS in page context | `browser_console` | `agent-browser eval` | Playwright `evaluate` |
+| Visual UI check | `browser_vision` | `agent-browser screenshot` + Read | screenshot + Read |
+
+**Two capability notes that outlive any tool name:**
+
+- **Parallel dispatch means literally concurrent.** Issue all N subagent calls in a *single* assistant turn. Looping them sequentially breaks Phase 1's core guarantee — the modules must not influence each other while being written.
+- **Page-context JS must run inside the already-authenticated session.** Spinning up a fresh headless browser loses cookies/localStorage and silently returns logged-out HTML.
+
+**Graceful degradation when a capability is absent:**
+
+| Missing | Do this instead |
+|---|---|
+| No subagent primitive | Run modules sequentially in the current session, but **preserve the independence rule** — do not let a later module read an earlier module's draft |
+| No browser automation | Fall back to static CSS/HTML parsing via `curl` / `WebFetch`, and downgrade the affected findings to **Medium** confidence (you are reading source, not computed styles) |
+| No surgical-edit primitive | Whole-file rewrites are acceptable, but re-verify cross-module consistency afterward — whole-file rewrites are exactly how contradictions creep in |
+
+**Reference implementation (WorkBuddy, verified by execution):**
+
+- `agent-browser` is a persistent CLI daemon — authenticated state survives across commands. Do not close it mid-task; close once at the end.
+- `agent-browser eval "<js>"` supports both `async`/`await` and `fetch()`.
+- `agent-browser get styles <selector>` returns computed styles — use it to prove a hex/font value was read from the live page rather than recalled from memory.
+
 ## When to Use
 
 Default to this workflow for **any research-oriented task** unless the user explicitly asks for a quick/single-fact lookup.
@@ -41,7 +75,7 @@ Do NOT use for simple, single-fact lookups or low-stakes summaries **only when t
    ├── 03-module-c/
    └── 04-data-sources/
    ```
-3. **Launch parallel research agents** (up to 3 via `delegate_task` batch mode).
+3. **Launch parallel research agents** — up to 3 concurrent subagent calls in a single turn (Hermes: `delegate_task` batch mode; see §Runtime Adaptation for other runtimes).
    - Each agent writes structured Markdown to its assigned directory.
    - Mandate: every key data point must cite a source. Estimates must show derivation logic.
 
@@ -73,10 +107,10 @@ This is the **critical differentiator**. Do not skip.
 1. **Launch revision agents** (one per module, or one per critical cross-cutting issue).
    - Each agent reads the original files + the critique report for its module.
 2. **Fix priority order**: P0 (Critical) → P1 (Major) → P2 (Minor) → P3 (Suggestion).
-3. **Use `patch` for surgical edits**, not full file overwrites.
+3. **Use surgical edits** (Hermes: `patch`; WorkBuddy: `Edit`), not full file overwrites.
 4. **Cross-module consistency fixes** are highest priority:
    - Same brand/person/number must be identical across all files.
-   - Use `search_files` to find all occurrences before editing.
+   - Search all occurrences first (Hermes: `search_files`; WorkBuddy: `Grep`) before editing.
 
 ### Phase 4: Re-Verification (Optional but Recommended)
 
@@ -161,11 +195,11 @@ The same cross-check pipeline can be applied to design system research and compe
 
 - **Phase 1 (Parallel Research)**: Launch agents to analyze different competitor sites simultaneously (e.g., Agent A → ChargePoint, Agent B → Tritium, Agent C → Wallbox). Each extracts: color palette, typography, navigation structure, CTA patterns, trust signals.
 - **Phase 2 (Cross-Review)**: A review agent compares findings across all competitor analyses to identify:
-  - **Data Accuracy**: Are extracted hex codes correct? (Verify with `browser_console`)
+  - **Data Accuracy**: Are extracted hex codes correct? (Verify against live computed styles — Hermes: `browser_console`; WorkBuddy: `agent-browser get styles <selector>`; never trust a copied value)
   - **Logical Consistency**: Do patterns hold across all competitors? (e.g., "All US EV charging sites use green/blue, no gold")
   - **Detail Richness**: Are navigation patterns, button styles, and spacing systems fully documented?
   - **Citation Authority**: Are colors from live computed styles, not assumed?
 - **Phase 3 (Revision)**: Synthesize findings into actionable design decisions (e.g., "Replace gold with brand blue #047acc based on 0/5 US competitors using gold")
 - **Output**: A design system reference document (see `frontend-theme-migration/references/us-ev-charging-b2b-design-patterns.md` for an example)
 
-**Key difference from market research**: Design analysis relies heavily on `browser_navigate` + `browser_console` for live token extraction, not just web search. The review agent should verify that extracted colors/fonts were actually read from computed styles, not guessed.
+**Key difference from market research**: Design analysis relies heavily on browser automation (Hermes: `browser_navigate` + `browser_console`; WorkBuddy: `agent-browser open` + `agent-browser eval`) for live token extraction, not just web search. The review agent should verify that extracted colors/fonts were actually read from computed styles, not guessed.

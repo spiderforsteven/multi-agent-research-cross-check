@@ -7,7 +7,7 @@
 
 把你的 agent 当研究团队用——4 个独立研究员并行挖材料，互不知道对方写了什么；然后一个独立审查员逐一读每一份报告，按数据准确性、逻辑一致性、细节丰富度、引用权威性四个维度打分；最后修订 agent 按优先级修掉所有 P0-P1 问题。
 
-跨 agent 通用——Hermes、Claude Code、Codex、Cursor 都能装。装完你的 agent 自动拥有「研究→审查→修订」的完整质量闭环。
+跨 agent 通用——Hermes、Claude Code、Codex、Cursor 都能装。装完你的 agent 自动拥有「研究→审查→修订」的完整质量闭环。工具名因 runtime 而异的换算对照表见 `SKILL.md` 的 **Runtime Adaptation** 章节。
 
 ## 装上就能用
 
@@ -138,7 +138,7 @@
 
 ```
 multi-agent-research-cross-check/
-  ├── SKILL.md                      # Hermes 技能定义文件
+  ├── SKILL.md                      # 技能定义文件（含 Runtime Adaptation 跨 runtime 工具映射）
   ├── README.md                     # 本文件
   └── references/
        └── research-output-confidence-template.md
