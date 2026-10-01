@@ -1,151 +1,157 @@
-# Multi-Agent Research Cross-Check · 多智能体互查辩论研究
+# Multi-Agent Research Cross-Check
 
-> 「说一句研究课题。拿回一份带交叉审查的调研报告。」
-> "Drop a research topic. Get a cross-reviewed deliverable back."
+> Drop a research topic. Get back a cross-reviewed report.
 
-**5 阶段流水线：并行研究 → 独立交叉审查 → 修订 → 可选复验 → 汇总交付。**
+**5-phase pipeline: parallel research → independent cross-review → revision → optional re-verification → final delivery.**
 
-把你的 agent 当研究团队用——4 个独立研究员并行挖材料，互不知道对方写了什么；然后一个独立审查员逐一读每一份报告，按数据准确性、逻辑一致性、细节丰富度、引用权威性四个维度打分；最后修订 agent 按优先级修掉所有 P0-P1 问题。
+**English** · [中文](./README.zh-CN.md)
 
-跨 agent 通用——Hermes、Claude Code、Codex、Cursor 都能装。装完你的 agent 自动拥有「研究→审查→修订」的完整质量闭环。工具名因 runtime 而异的换算对照表见 `SKILL.md` 的 **Runtime Adaptation** 章节。
+Use your agent as a research team. Four independent researchers dig in parallel, none of them aware of what the others wrote. Then a separate reviewer reads every report and scores it across data accuracy, logical consistency, detail richness, and citation authority. Finally, a revision agent fixes every P0–P1 issue in priority order.
 
-## 装上就能用
+Runtime-agnostic — installs on Hermes, Claude Code, Codex, or Cursor. Tool-name translation per runtime lives in the **Runtime Adaptation** section of `SKILL.md`.
 
-然后在你的 agent 里直接说话：
-
-```
-「调研一下国内智能种植机竞品格局，按互查辩论流程做。」
-「分析这个 feature request，出矛盾地图和决策建议。」
-「做个 SaaS 竞品定价策略分析，要交叉审查。」
-「帮我评估这个新功能需求，用 4 个视角分别分析。」
-```
-
-## 能做什么
-
-| 能力 | 交付物 | 典型耗时 |
-|------|--------|----------|
-| 行业/竞争研究 | 带置信度标注和数据来源的深度报告 | 3-8 轮 agent 交互 |
-| 产品需求分析 | 4 视角矛盾地图 + 决策建议 | 4-6 轮 |
-| 设计系统竞品分析 | 竞品设计模式汇总 + 设计决策依据 | 3-5 轮 |
-| 市场情报/商务分析 | 结构化结论表（High/Medium/Low/Speculative） | 4-8 轮 |
-
-## 核心流程
+## Say this to your agent
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                   Topic Decomposition                 │
-│         (把课题拆成 2-4 个独立子模块)                    │
-└────────────────────────┬─────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────┐
-         ▼               ▼               ▼
-   ┌──────────┐   ┌──────────┐   ┌──────────┐
-   │ Agent A  │   │ Agent B  │   │ Agent C  │  ← 并行研究（互不知情）
-   │ Module 1 │   │ Module 2 │   │ Module 3 │
-   └──────────┘   └──────────┘   └──────────┘
-         │               │               │
-         └───────────────┼───────────────┘
-                         ▼
-               ┌──────────────────┐
-               │  Independent     │
-               │  Cross-Review    │  ← 独立审查员，4 维度打分
-               │  (四维度审查)     │
-               └────────┬─────────┘
-                        │
-                        ▼
-               ┌──────────────────┐
-               │    Revision      │  ← P0→P1→P2→P3 逐级修复
-               └────────┬─────────┘
-                        │
-              (可选)     ▼
-               ┌──────────────────┐
-               │  Re-Verification │  ← 抽查 P0/P1 修复质量
-               └────────┬─────────┘
-                        │
-                        ▼
-               ┌──────────────────┐
-               │  Final Delivery  │  ← README + 版本历史 + 已知局限
-               └──────────────────┘
+"Research the competitive landscape for smart planters, using the cross-check workflow."
+"Analyze this feature request — give me a contradiction map and a recommendation."
+"Do a pricing-strategy analysis of a SaaS competitor, with cross-review."
+"Evaluate this new feature request from four separate perspectives."
 ```
 
-## 核心特色
+## What it does
 
-### 四维度交叉审查（区别于普通调研的关键）
+| Capability | Deliverable | Typical effort |
+|---|---|---|
+| Industry / competitive research | Deep report with confidence labels and cited sources | 3–8 agent turns |
+| Product requirements analysis | Four-perspective contradiction map + recommendation | 4–6 turns |
+| Design-system competitive analysis | Competitor design-pattern summary + design rationale | 3–5 turns |
+| Market / business intelligence | Structured conclusion table (High / Medium / Low / Speculative) | 4–8 turns |
 
-普通调研只做「收集信息→输出报告」，本技能在中间插了一道独立审查关卡：
+## The pipeline
 
-| 维度 | 审查内容 | 为什么重要 |
-|------|---------|-----------|
-| **1. 数据准确性** | 每个关键数据是否有来源？跨源验证是否一致？市场规模/CAGR 是否内部可算？ | 防止 agent 编造数字 |
-| **2. 逻辑一致性** | 不同模块的结论是否矛盾？假设链是否闭环？财务模型（CAC/LTV/churn）是否能算对？ | 防止跨模块逻辑断裂 |
-| **3. 细节丰富度** | 是否有遗漏的重要玩家/细分？技术分析是否完整？边界情况是否覆盖？ | 防止浅层分析 |
-| **4. 引用权威性** | 来源是 tier-1（财报/官方/行业报告）还是二级？估算是否有推导过程？ | 防止引用不可信源 |
+```
+┌────────────────────────────────────────────────────────────┐
+│                    Topic Decomposition                     │
+│            (split into 2-4 independent modules)            │
+└────────────────────────────────────────────────────────────┘
 
-### 置信度标注体系
+                               │
+         ┌─────────────────────┼─────────────────────┐
+ ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
+ │    Agent A    │     │    Agent B    │     │    Agent C    │      <- parallel research, no shared drafts
+ │   Module 1    │     │   Module 2    │     │   Module 3    │      <- each agent must cite its sources
+ └───────────────┘     └───────────────┘     └───────────────┘
+         │                     │                     │
+         └─────────────────────┼─────────────────────┘
+                               │
 
-每个结论必须标注置信度等级，让读者知道哪些可信任、哪些仅供参考：
+           ┌──────────────────────────────────────┐
+           │       Independent Cross-Review       │                 <- the key differentiator
+           │   separate reviewer, 4 dimensions    │
+           └──────────────────────────────────────┘
 
-| 等级 | 含义 | 典型来源 |
-|------|------|---------|
-| **High** | 官方来源直接确认，文本明确 | 官方帮助中心、SEC 文件 |
-| **Medium** | 官方来源支持但缺细节 | 官方公告、新闻稿 |
-| **Low** | 仅第三方/用户报告/间接证据 | 论坛、用户评论、三方评测 |
-| **Speculative** | 无直接证据或来源互相矛盾 | 推理推断，必须标注 |
+                               │
 
-### 需求分析适配
+           ┌──────────────────────────────────────┐
+           │               Revision               │                 <- surgical edits only
+           │       fix P0 -> P1 -> P2 -> P3       │
+           └──────────────────────────────────────┘
 
-除常规研究外，本技能特别适配产品需求分析场景。4 个独立视角 agent：
+                               │
 
-| Agent 角色 | 关注点 | 典型数据源 |
-|-----------|--------|-----------|
-| **用户视角** | 真实痛点、行为、欲望 | Reddit、客服记录、用户访谈 |
-| **技术视角** | 可行性、BOM 成本、架构 | 技术文档、成本模型 |
-| **商业视角** | 战略对齐、ROI、定价 | GTM 研究、内部数据 |
-| **竞品视角** | 竞品做了什么、成败原因 | 竞品拆解、行业报告 |
+           ┌──────────────────────────────────────┐
+           │      Re-Verification (optional)      │                 <- recommended for critical work
+           │  spot-check that P0/P1 fixes landed  │
+           └──────────────────────────────────────┘
 
-交叉审查的**核心产出不是报告，而是矛盾地图**——那些用户想要但技术说太贵、商业说 Q3 发但竞品 Q3 也发的冲突点，才是 PM 真正需要做的决策。
+                               │
 
-## 反 AI slop 规则
+           ┌──────────────────────────────────────┐
+           │            Final Delivery            │                 <- state what is still unverified
+           │  README + version history + limits   │
+           └──────────────────────────────────────┘
+```
 
-| 🚫 AI slop 症状 | 怎么修 |
-|----------------|--------|
-| 每段结论无来源标注 | 每个关键结论必须有 URL + 原文引用 + 获取日期 |
-| 估算不标推导过程 | 必须写出：从什么数据、用什么公式、得到什么数字 |
-| 跨模块矛盾自动忽视 | 审查 agent 必须对比所有模块的相同指标 |
-| 引用「行业常识」代替数据 | 标记为 Speculative 或 Medium-low |
-| 财务数据只给最终数字 | 审查 agent 必须实际重算公式 |
+## What makes it different
 
-**交付前自检清单：**
+### Four-dimension cross-review
 
-1. 每个结论都有置信度等级？（High/Medium/Low/Speculative）
-2. 所有 P0/Critical 问题都已修复并验证？
-3. 跨模块矛盾已列出并解决？
-4. 来源缺失的部分已诚实标注为「无直接来源」？
-5. README 中标注了已知局限和数据质量 caveats？
+Ordinary research goes straight from "collect information" to "write the report". This skill inserts an independent review gate in between:
 
-什么是 AI slop？AI 最常产出的那种「看起来像那么回事，仔细一看每个数字都说不出来源」的调研报告——全是水词，找不到一个可验证的锚点。
+| Dimension | What the reviewer checks | Why it matters |
+|---|---|---|
+| **1. Data accuracy** | Does every key figure have a source? Do multiple sources agree? Are the market-size / CAGR figures internally consistent? | Stops the agent inventing numbers |
+| **2. Logical consistency** | Do conclusions across modules contradict each other? Are the assumptions closed-loop? Does the financial model actually compute (CAC / LTV / churn)? | Catches cross-module breaks |
+| **3. Detail richness** | Are major players or segments missing? Is the technical analysis complete? Are edge cases covered? | Prevents shallow analysis |
+| **4. Citation authority** | Are sources tier-1 (filings, official docs, industry reports) or second-hand? Do estimates show their derivation? | Prevents citing unreliable sources |
 
-反 AI slop 不是审美洁癖，是保证你在用调研结果做产品决策时，知道哪些能信、哪些不能信。
+### Confidence labelling
+
+Every conclusion carries a confidence level, so a reader knows which ones to trust:
+
+| Level | Meaning | Typical source |
+|---|---|---|
+| **High** | Stated explicitly by an official source | Official help centre, SEC filing |
+| **Medium** | Supported by an official source but missing detail | Official announcement, press release |
+| **Low** | Third-party, user-reported, or indirect only | Forums, user reviews, third-party tests |
+| **Speculative** | No direct evidence, or sources conflict | Inference — must be labelled as such |
+
+### Requirements-analysis adaptation
+
+Beyond standard research, the pipeline fits product requirements analysis. Four independent perspective agents:
+
+| Agent role | Focus | Typical sources |
+|---|---|---|
+| **User perspective** | Real pain points, behaviour, desires | Reddit, support tickets, user interviews |
+| **Tech perspective** | Feasibility, BOM cost, architecture | Technical docs, cost models |
+| **Business perspective** | Strategic alignment, ROI, pricing | GTM research, internal data |
+| **Competitor perspective** | What peers shipped, and why it worked or failed | Competitor teardowns, industry reports |
+
+The core output of cross-review here is **not a report but a contradiction map** — the points where users want something the tech says costs 3× the budget, or where business plans a Q3 launch while competitor data shows two other products launching in Q3. Those contradictions are the decisions the PM actually has to make.
+
+## Anti-AI-slop rules
+
+| 🚫 Symptom | Fix |
+|---|---|
+| Conclusions with no source | Every key conclusion needs URL + exact quote + access date |
+| Estimates with no derivation | State the input data, the formula, and the result |
+| Cross-module contradictions ignored | The reviewer must compare the same metric across all modules |
+| "Industry common knowledge" used instead of data | Label Speculative, or downgrade to Medium-low |
+| Financial figures given as bare numbers | The reviewer must recompute the formula |
+
+**Pre-delivery checklist:**
+
+1. Does every conclusion carry a confidence level (High / Medium / Low / Speculative)?
+2. Are all P0 / Critical issues fixed *and verified*?
+3. Are cross-module contradictions listed and resolved?
+4. Are gaps honestly labelled "no direct source"?
+5. Does the README state known limitations and data-quality caveats?
+
+AI slop is the kind of report that reads plausibly until you check a number — all filler, no verifiable anchor.
+
+Guarding against it is not an aesthetic preference. It is what lets you know which parts of a research result you can act on, and which you cannot.
 
 ## Limitations
 
-- **不能替代一手调研**：本技能产出的是基于公开信息的分析，不能替代用户访谈、实地调研或实验数据
-- **交叉审查依赖 agent 能力**：审查质量取决于底层模型的推理能力，复杂财务模型仍建议人工复核
-- **不适合单次快速查询**：如果你只需要一个简单事实（「XX 公司估值多少」），不要用这个流程——它太重了
-- **多模块矛盾可能遗漏**：当子模块超过 4 个时，审查 agent 的跨模块一致性检查可能不完整
+- **Not a substitute for primary research.** Output is analysis of public information; it does not replace user interviews, field work, or experimental data.
+- **Cross-review quality depends on the underlying model.** Complex financial models still warrant human review.
+- **Overkill for single-fact lookups.** If you only need one fact ("what is company X's valuation"), do not run this pipeline.
+- **Multiple-module contradictions can be missed.** With more than four sub-modules, the reviewer's cross-module consistency check may be incomplete.
 
-## 仓库结构
+## Repository structure
 
 ```
 multi-agent-research-cross-check/
-  ├── SKILL.md                      # 技能定义文件（含 Runtime Adaptation 跨 runtime 工具映射）
-  ├── README.md                     # 本文件
+  ├── SKILL.md                      # Skill definition (includes the Runtime Adaptation mapping)
+  ├── README.md                     # This file (English)
+  ├── README.zh-CN.md               # Chinese README
   └── references/
        └── research-output-confidence-template.md
 ```
 
-## 关于这个技能
+## About
 
-本技能解决的是单 agent 调研的一个固有问题：单个 agent 独立搜索容易产出「看起来有道理但经不起追问」的结论。通过在标准调研流程中插入一道独立交叉审查关卡，让 agent 之间互相制衡，从而提升产出质量。
+This skill addresses a structural problem with single-agent research: one agent searching alone tends to produce conclusions that sound reasonable but do not survive follow-up questions. Inserting an independent cross-review gate into a standard research flow makes the agents check each other, which raises output quality.
 
-核心设计原则：**高质量产出不是靠更聪明的 agent，而是靠 agent 之间的互相制衡**。
+The core design principle: **quality comes not from a smarter agent, but from agents holding each other accountable.**
